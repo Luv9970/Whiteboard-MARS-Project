@@ -4,7 +4,14 @@ import "./Whiteboard.css";
 
 const roughGenerator = rough.generator();
 
-const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
+const Whiteboard = ({
+  canvasRef,
+  ctxRef,
+  elements,
+  setElements,
+  tool,
+  color,
+}) => {
   const [isDrawing, setIsdrawing] = useState(false);
 
   useEffect(() => {
@@ -13,8 +20,16 @@ const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
     canvas.height = window.innerHeight * 2;
     canvas.width = window.innerWidth * 2;
 
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
     ctxRef.current = ctx;
   }, []);
+
+  useEffect(() => {
+    ctxRef.current.strokeStyle = color;
+  }, [color]);
 
   useLayoutEffect(() => {
     const roughCanvas = rough.canvas(canvasRef.current);
@@ -30,14 +45,23 @@ const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
 
     elements.forEach((element) => {
       if (element.type === "pencil") {
-        roughCanvas.linearPath(element.path);
+        roughCanvas.linearPath(element.path, {
+          stroke: element.stroke,
+          strokeWidth: 5,
+          roughness: 0,
+        });
       } else if (element.type === "line") {
         roughCanvas.draw(
           roughGenerator.line(
             element.offsetX,
             element.offsetY,
             element.endX,
-            element.endY
+            element.endY,
+            {
+              stroke: element.stroke,
+              strokeWidth: 5,
+              roughness: 0,
+            }
           )
         );
       } else if (element.type === "rect") {
@@ -46,7 +70,12 @@ const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
             element.offsetX,
             element.offsetY,
             element.width - element.offsetX,
-            element.height - element.offsetY
+            element.height - element.offsetY,
+            {
+              stroke: element.stroke,
+              strokeWidth: 5,
+              roughness: 0,
+            }
           )
         );
       }
@@ -64,7 +93,7 @@ const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
           offsetX,
           offsetY,
           path: [[offsetX, offsetY]],
-          stroke: "black",
+          stroke: color,
         },
       ]);
     } else if (tool === "line") {
@@ -76,7 +105,7 @@ const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
           offsetY,
           endX: offsetX,
           endY: offsetY,
-          stroke: "black",
+          stroke: color,
         },
       ]);
     } else if (tool === "rect") {
@@ -88,7 +117,7 @@ const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
           offsetY,
           width: offsetX,
           height: offsetY,
-          stroke: "black",
+          stroke: color,
         },
       ]);
     }
@@ -164,11 +193,6 @@ const Whiteboard = ({ canvasRef, ctxRef, elements, setElements, tool }) => {
 };
 
 export default Whiteboard;
-
-
-
-
-
 
 // import React, { useEffect, useLayoutEffect, useState } from "react";
 // import rough from "roughjs/bin/rough"; // Make sure you're importing this way if using Vite
