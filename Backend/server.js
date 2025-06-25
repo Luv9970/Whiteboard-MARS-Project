@@ -25,15 +25,16 @@ app.get("/", (req, res) => {
 // socket.io
 let imageUrl, userRoom;
 io.on("connection", (socket) => {
-  socket.on("user-joined", (data) => {
-    const { roomId, userId, userName, host, presenter } = data;
-    userRoom = roomId;
-    const user = userJoin(socket.id, userName, roomId, host, presenter);
-    const roomUsers = getUsers(user.room);
-    socket.join(user.room);
+  socket.on("userJoined", (data) => {
+    const { name, roomId, userId,  host, presenter } = data;
+    socket.join(roomId);
     socket.emit("message", {
       message: "Welcome to ChatRoom",
     });
+
+    userRoom = roomId;
+    const user = userJoin(socket.id, userName, roomId, host, presenter);
+    const roomUsers = getUsers(user.room);
     socket.broadcast.to(user.room).emit("message", {
       message: `${user.username} has joined`,
     });
@@ -48,7 +49,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    const userLeaves = userLeave(socket.id);
+    // const userLeaves = userLeave(socket.id);
     const roomUsers = getUsers(userRoom);
 
     if (userLeaves) {
