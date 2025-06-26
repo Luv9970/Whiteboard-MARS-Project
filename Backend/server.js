@@ -22,9 +22,12 @@ app.get("/", (req, res) => {
   res.send("server");
 });
 
+let roomIdGlobal, imgURLGlobal;
 // socket.io
 let imageUrl, userRoom;
 io.on("connection", (socket) => {
+
+
   socket.on("userJoined", (data) => {
     const { name, roomId, userId,  host, presenter } = data;
     socket.join(roomId);
@@ -32,32 +35,41 @@ io.on("connection", (socket) => {
       message: "Welcome to ChatRoom",
     });
 
-    userRoom = roomId;
-    const user = userJoin(socket.id, userName, roomId, host, presenter);
-    const roomUsers = getUsers(user.room);
-    socket.broadcast.to(user.room).emit("message", {
-      message: `${user.username} has joined`,
+    roomIdGlobal = roomId;
+    // const user = userJoin(socket.id, userName, roomId, host, presenter);
+    // const roomUsers = getUsers(user.room);
+    socket.broadcast.to(roomId).emit("WhiteboardDataResponse", {
+      imageURL: imgURLGlobal,
     });
 
-    io.to(user.room).emit("users", roomUsers);
-    io.to(user.room).emit("canvasImage", imageUrl);
+    // io.to(user.room).emit("users", roomUsers);
+    // io.to(user.room).emit("canvasImage", imageUrl);
   });
 
+
+  socket.on("whiteboareData", (data) => {
+    imgURLGlobal = data;
+    userRoom = socket.id; // Assuming socket.id is used as roomId
+    socket.broadcast.to(roomIdGlobal).emit("WhiteboardDataResponse",{
+      imageURL : data
+    });
+  })
+
   socket.on("drawing", (data) => {
-    imageUrl = data;
-    socket.broadcast.to(userRoom).emit("canvasImage", imageUrl);
+    imageURL = data;
+    socket.broadcast.to(userRoom).emit("canvasImage", imageURL);
   });
 
   socket.on("disconnect", () => {
     // const userLeaves = userLeave(socket.id);
     const roomUsers = getUsers(userRoom);
 
-    if (userLeaves) {
-      io.to(userLeaves.room).emit("message", {
-        message: `${userLeaves.username} left the chat`,
-      });
-      io.to(userLeaves.room).emit("users", roomUsers);
-    }
+    // if (userLeaves) {
+    //   io.to(userLeaves.room).emit("message", {
+    //     message: `${userLeaves.username} left the chat`,
+    //   });
+    //   io.to(userLeaves.room).emit("users", roomUsers);
+    // }
   });
 });
 

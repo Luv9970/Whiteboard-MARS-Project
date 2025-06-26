@@ -1,13 +1,13 @@
 import React, {  useState } from 'react'
 import './JoinRoomForm.css'
-import { Navigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const JoinRoomForm = ({uuid ,socket , setUser}) => {
 
   const[roomId , setRoomId]=useState("")
   const [name, setName] = useState("");
 
-  const navigate = Navigate();
+  const navigate = useNavigate();
 
   const handleJoinRoom = (e) => {
     e.preventDefault();
@@ -42,14 +42,14 @@ const JoinRoomForm = ({uuid ,socket , setUser}) => {
             <input
               type="text"
               className="form-control my-2"
-              placeholder="Generate Room Code"
+              placeholder="Join Room Code"
               value={roomId}
               onChange={(e) => setRoomId(e.target.value)}
             />
           </div>
         </div>
         <button type="submit" onClick={handleJoinRoom} className="mt-4 btn btn-primary form-control">
-            Generate Room
+            Join Room
         </button>
       </form>
   )
